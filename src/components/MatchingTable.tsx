@@ -16,7 +16,6 @@ export function MatchingTable() {
   const [approving, setApproving] = useState(false);
   const [approved, setApproved] = useState(false);
 
-  // Извлечь session_id из URL
   const sessionId =
     new URLSearchParams(window.location.search).get('session_id') || '';
 
@@ -37,7 +36,6 @@ export function MatchingTable() {
       setLoading(false);
       return;
     }
-
     fetchSession(sessionId)
       .then((data) => {
         setSession(data);
@@ -80,15 +78,13 @@ export function MatchingTable() {
 
   const handleApprove = async () => {
     if (!sessionId) return;
-
     const hasRed = items.some((i) => i.status === 'red');
     if (hasRed) {
       const confirmed = await messenger.showConfirm(
-        'Есть позиции без соответствия (красные). Продолжить?',
+        'Есть позиции без соответствия. Продолжить?',
       );
       if (!confirmed) return;
     }
-
     setApproving(true);
     try {
       const initData = messenger.getInitData();
@@ -101,32 +97,40 @@ export function MatchingTable() {
     }
   };
 
-  // Статистика
   const green = items.filter((i) => i.status === 'green').length;
   const yellow = items.filter((i) => i.status === 'yellow').length;
   const red = items.filter((i) => i.status === 'red').length;
 
+  /* === LOADING === */
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse text-slate-400 text-lg">
-          Загрузка сессии...
+        <div className="text-center">
+          <div className="w-12 h-12 border-3 border-slate-700 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-400 text-sm">Загрузка сессии...</p>
         </div>
       </div>
     );
   }
 
+  /* === NO SESSION ID === */
   if (!sessionId && !loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-4">
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-8 text-center max-w-sm">
-          <h1 className="text-xl font-semibold text-slate-200 mb-2">LisVent</h1>
-          <p className="text-slate-400 text-sm mb-6">
-            Откройте через бот или создайте тестовую сессию.
+      <div className="flex items-center justify-center min-h-screen p-6">
+        <div className="glass-card p-8 text-center max-w-sm w-full">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/20 flex items-center justify-center mx-auto mb-5">
+            <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-slate-100 mb-2">LisVent</h1>
+          <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+            Сопоставление номенклатуры<br />
+            Откройте через бот или создайте тест
           </p>
           <button
             onClick={handleCreateDemo}
-            className="px-6 py-3 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg"
+            className="w-full py-3.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-blue-500/25"
           >
             Создать тестовую сессию
           </button>
@@ -135,31 +139,40 @@ export function MatchingTable() {
     );
   }
 
+  /* === ERROR === */
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-4">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
-          <p className="text-red-400 text-lg font-medium mb-2">Ошибка</p>
+      <div className="flex items-center justify-center min-h-screen p-6">
+        <div className="glass-card p-8 text-center max-w-sm w-full border-red-500/20">
+          <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <p className="text-red-400 font-semibold mb-2">Ошибка</p>
           <p className="text-slate-400 text-sm">{error}</p>
         </div>
       </div>
     );
   }
 
+  /* === APPROVED === */
   if (approved) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-4">
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-8 text-center max-w-sm">
-          <div className="text-4xl mb-4">&#10003;</div>
-          <p className="text-emerald-400 text-lg font-medium mb-2">
-            Заказ утвержден!
-          </p>
-          <p className="text-slate-400 text-sm">
-            Файл отправлен в чат. Можете закрыть это окно.
+      <div className="flex items-center justify-center min-h-screen p-6">
+        <div className="glass-card p-8 text-center max-w-sm w-full">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-5">
+            <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-emerald-400 text-xl font-bold mb-2">Заказ утвержден!</p>
+          <p className="text-slate-400 text-sm mb-6">
+            Excel-файл отправлен в чат
           </p>
           <button
             onClick={() => messenger.close()}
-            className="mt-4 px-6 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm hover:bg-slate-600 transition-colors"
+            className="px-8 py-2.5 rounded-xl bg-slate-700/50 text-slate-300 text-sm hover:bg-slate-600/50 transition-all border border-slate-600/30"
           >
             Закрыть
           </button>
@@ -168,70 +181,85 @@ export function MatchingTable() {
     );
   }
 
+  /* === MAIN TABLE === */
   return (
-    <div className="flex flex-col min-h-screen pb-20">
+    <div className="flex flex-col min-h-screen pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
-        <h1 className="text-base font-semibold text-slate-200">
-          {session?.client_name || 'Заказ'}
-        </h1>
-        <div className="flex gap-3 mt-1.5">
-          <span className="flex items-center gap-1 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-slate-400">{green}</span>
+      <div className="sticky top-0 z-30 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-slate-700/30 px-4 py-3.5">
+        <div className="flex items-center justify-between">
+          <h1 className="text-base font-bold text-slate-100 tracking-tight">
+            {session?.client_name || 'Заказ'}
+          </h1>
+          <span className="text-[11px] text-slate-500 font-mono">
+            #{session?.session_id}
           </span>
-          <span className="flex items-center gap-1 text-xs">
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-            <span className="text-slate-400">{yellow}</span>
-          </span>
-          <span className="flex items-center gap-1 text-xs">
-            <span className="w-2 h-2 rounded-full bg-red-500" />
-            <span className="text-slate-400">{red}</span>
-          </span>
-          <span className="text-xs text-slate-500 ml-auto">
+        </div>
+
+        {/* Status bar */}
+        <div className="flex items-center gap-4 mt-2.5">
+          <StatusBadge color="emerald" count={green} label="OK" />
+          <StatusBadge color="amber" count={yellow} label="Проверить" />
+          <StatusBadge color="red" count={red} label="Не найдено" />
+          <span className="text-[11px] text-slate-500 ml-auto font-medium">
             {items.length} позиций
           </span>
         </div>
       </div>
 
-      {/* Items */}
-      <div className="flex-1 p-3 space-y-1">
-        {/* Красные первыми — требуют действия */}
-        {items
-          .filter((i) => i.status === 'red')
-          .map((item) => (
-            <RedRow key={item.id} item={item} onSelect={handleSelectRed} />
-          ))}
-
-        {/* Желтые — быстрая проверка */}
-        {items
-          .filter((i) => i.status === 'yellow')
-          .map((item) => (
-            <YellowRow
-              key={item.id}
-              item={item}
-              onConfirm={handleConfirmYellow}
-            />
-          ))}
-
-        {/* Зеленые — OK */}
-        {items
-          .filter((i) => i.status === 'green')
-          .map((item) => (
-            <GreenRow key={item.id} item={item} />
-          ))}
+      {/* Items list */}
+      <div className="flex-1 p-3">
+        {items.filter((i) => i.status === 'red').map((item) => (
+          <RedRow key={`r-${item.id}`} item={item} onSelect={handleSelectRed} />
+        ))}
+        {items.filter((i) => i.status === 'yellow').map((item) => (
+          <YellowRow key={`y-${item.id}`} item={item} onConfirm={handleConfirmYellow} />
+        ))}
+        {items.filter((i) => i.status === 'green').map((item) => (
+          <GreenRow key={`g-${item.id}`} item={item} />
+        ))}
       </div>
 
-      {/* Sticky кнопка */}
-      <div className="fixed bottom-0 left-0 right-0 p-3 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50">
+      {/* Sticky approve button */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#0a0f1e]/90 backdrop-blur-xl border-t border-slate-700/30">
         <button
           onClick={handleApprove}
           disabled={approving}
-          className="w-full py-3.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/20"
+          className="w-full py-4 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white hover:from-blue-500 hover:via-indigo-500 hover:to-violet-500 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xl shadow-indigo-500/20"
         >
-          {approving ? 'Отправка...' : 'Утвердить и отправить в 1С'}
+          {approving ? (
+            <span className="flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Отправка...
+            </span>
+          ) : (
+            'Утвердить и отправить в 1С'
+          )}
         </button>
       </div>
     </div>
+  );
+}
+
+
+/* === Status Badge === */
+function StatusBadge({ color, count, label }: { color: string; count: number; label: string }) {
+  const colors: Record<string, string> = {
+    emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    red: 'bg-red-500/10 text-red-400 border-red-500/20',
+  };
+  const dotColors: Record<string, string> = {
+    emerald: 'bg-emerald-400',
+    amber: 'bg-amber-400',
+    red: 'bg-red-400',
+  };
+
+  if (count === 0) return null;
+
+  return (
+    <span className={`flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-lg border font-medium ${colors[color]}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${dotColors[color]}`} />
+      {count} {label}
+    </span>
   );
 }
