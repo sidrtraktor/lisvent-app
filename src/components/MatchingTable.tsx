@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { MatchResult, SessionData } from '../api/client';
-import { fetchSession, approveSession } from '../api/client';
+import {
+  fetchSession,
+  approveSession,
+  createDemoSession as apiCreateDemo,
+} from '../api/client';
 import { messenger } from '../hooks/useMessenger';
 import { GreenRow, YellowRow, RedRow } from './MatchRows';
 
@@ -16,17 +20,14 @@ export function MatchingTable() {
   const sessionId =
     new URLSearchParams(window.location.search).get('session_id') || '';
 
-  const createDemoSession = async () => {
+  const handleCreateDemo = async () => {
     setLoading(true);
     setError(null);
     try {
-      const apiBase = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${apiBase}/api/demo`);
-      const data = await res.json();
-      // Редирект на URL с session_id
+      const data = await apiCreateDemo();
       window.location.search = `?session_id=${data.session_id}`;
     } catch {
-      setError('Не удалось создать тестовую сессию. Запущен ли бэкенд на :8000?');
+      setError('Не удалось создать тестовую сессию. Запущен ли бэкенд?');
       setLoading(false);
     }
   };
@@ -124,7 +125,7 @@ export function MatchingTable() {
             Откройте через бот или создайте тестовую сессию.
           </p>
           <button
-            onClick={createDemoSession}
+            onClick={handleCreateDemo}
             className="px-6 py-3 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg"
           >
             Создать тестовую сессию

@@ -33,11 +33,26 @@ export interface StandardItem {
   unit: string;
 }
 
-export async function fetchSession(sessionId: string): Promise<SessionData> {
-  const res = await fetch(`${API_BASE}/api/session/${sessionId}`);
+/**
+ * Общая обертка fetch с заголовками (ngrok-skip-browser-warning).
+ */
+async function apiFetch(path: string, options?: RequestInit): Promise<Response> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': '1',
+      ...(options?.headers || {}),
+    },
+  });
   if (!res.ok) {
-    throw new Error(`Ошибка загрузки сессии: ${res.status}`);
+    throw new Error(`API error: ${res.status}`);
   }
+  return res;
+}
+
+export async function fetchSession(sessionId: string): Promise<SessionData> {
+  const res = await apiFetch(`/api/session/${sessionId}`);
   return res.json();
 }
 
@@ -46,23 +61,21 @@ export async function approveSession(
   items: MatchResult[],
   initData: string,
 ): Promise<{ status: string; session_id: string; items_count: number }> {
-  const res = await fetch(`${API_BASE}/api/session/${sessionId}/approve`, {
+  const res = await apiFetch(`/api/session/${sessionId}/approve`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ items, init_data: initData }),
   });
-  if (!res.ok) {
-    throw new Error(`Ошибка утверждения: ${res.status}`);
-  }
   return res.json();
 }
 
 export async function searchStandardDb(query: string): Promise<StandardItem[]> {
-  const res = await fetch(
-    `${API_BASE}/api/standard-db/search?q=${encodeURIComponent(query)}`,
+  const res = await apiFetch(
+    `/api/standard-db/search?q=${encodeURIComponent(query)}`,
   );
-  if (!res.ok) {
-    throw new Error(`Ошибка поиска: ${res.status}`);
-  }
+  return res.json();
+}
+
+export async function createDemoSession(): Promise<{ session_id: string }> {
+  const res = await apiFetch('/api/demo');
   return res.json();
 }
