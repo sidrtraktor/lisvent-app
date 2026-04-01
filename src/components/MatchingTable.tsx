@@ -206,9 +206,9 @@ export function MatchingTable() {
 
 
   return (
-    <div className="flex flex-col min-h-screen pb-36 w-full max-w-2xl mx-auto px-4 sm:px-6 relative sm:border-x border-slate-700/30 bg-[#0a0f1e]">
+    <div className="flex flex-col min-h-screen pb-36 w-full relative">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-slate-700/30 py-3.5 -mx-4 px-4 sm:-mx-6 sm:px-6">
+      <div className="sticky top-0 z-30 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-slate-700/30 py-4 mb-2">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-base font-bold text-slate-100 tracking-tight">
@@ -234,7 +234,7 @@ export function MatchingTable() {
       </div>
 
       {/* Items list */}
-      <div className="flex-1 w-full max-w-2xl mx-auto px-4 py-3 pb-24">
+      <div className="flex-1 w-full flex flex-col gap-2 pb-28">
         {items.filter((i) => i.status === 'red').map((item) => (
           <RedRow key={`r-${item.id}`} item={item} onSelect={handleSelectRed} />
         ))}
@@ -247,7 +247,7 @@ export function MatchingTable() {
       </div>
 
       {/* Sticky footer buttons */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#0a0f1e]/90 backdrop-blur-xl border-t border-slate-700/30 flex flex-col gap-3">
+      <div className="sticky bottom-0 bg-[#0a0f1e]/90 backdrop-blur-xl border-t border-slate-700/30 flex flex-col gap-3 mt-auto py-4 z-40">
         <button
           onClick={handleApprove}
           disabled={approving}
