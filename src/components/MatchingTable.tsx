@@ -208,7 +208,7 @@ export function MatchingTable() {
   return (
     <div className="flex flex-col min-h-screen pb-36 w-full relative">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-slate-700/30 py-4 mb-2">
+      <div className="sticky top-0 z-30 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-slate-700/30 py-4 mb-2 px-2">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-base font-bold text-slate-100 tracking-tight">

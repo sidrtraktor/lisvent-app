@@ -11,7 +11,7 @@ function App() {
     <div className="w-full flex justify-center bg-[#0a0f1e] min-h-screen">
       <div 
         className="w-full max-w-xl flex flex-col"
-        style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px' }}
+        style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px' }}
       >
         <MatchingTable />
       </div>
