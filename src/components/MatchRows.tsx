@@ -49,7 +49,7 @@ export function GreenRow({ item }: GreenRowProps) {
           {/* Колонка 1: Заявка */}
           <div 
             className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            style={{ paddingLeft: '12px' }}
+            style={{ paddingLeft: '6px' }}
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
@@ -105,7 +105,7 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
           {/* Колонка 1: Заявка */}
           <div 
             className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            style={{ paddingLeft: '12px' }}
+            style={{ paddingLeft: '6px' }}
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
@@ -196,7 +196,7 @@ export function RedRow({ item, onSelect }: RedRowProps) {
           {/* Колонка 1: Заявка */}
           <div 
             className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            style={{ paddingLeft: '12px' }}
+            style={{ paddingLeft: '6px' }}
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
