@@ -54,7 +54,7 @@ export function GreenRow({ item }: GreenRowProps) {
           >
             <CopyToast show={copiedId === 'client'} />
             <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-sm text-slate-300 font-medium leading-tight line-clamp-2">{item.original_name}</p>
+            <p className="text-sm text-slate-300 font-medium leading-tight">{item.original_name}</p>
             <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
@@ -65,7 +65,7 @@ export function GreenRow({ item }: GreenRowProps) {
           >
             <CopyToast show={copiedId === '1c'} />
             <p className="text-[9px] uppercase tracking-wider text-emerald-500/70 mb-0.5">Предложение 1С</p>
-            <p className="text-sm text-emerald-100 font-medium leading-tight line-clamp-2">{item.matched_name}</p>
+            <p className="text-sm text-emerald-100 font-medium leading-tight">{item.matched_name}</p>
             <p className="text-[10px] text-emerald-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
           >
             <CopyToast show={copiedId === 'client'} />
             <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-sm text-slate-300 font-medium leading-tight line-clamp-2">{item.original_name}</p>
+            <p className="text-sm text-slate-300 font-medium leading-tight">{item.original_name}</p>
             <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
@@ -124,29 +124,24 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
               <p className="text-[9px] uppercase tracking-wider text-amber-500/80 font-bold">ИИ-Подбор 1С</p>
               <span className="text-[9px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">{Math.round(item.confidence * 100)}%</span>
             </div>
-            <p className="text-sm text-amber-100 font-medium leading-tight line-clamp-2">{item.matched_name}</p>
+            <p className="text-sm text-amber-100 font-medium leading-tight">{item.matched_name}</p>
             <p className="text-[10px] text-amber-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
           </div>
         </div>
 
         {/* Колонка 3: Статус (Узкая) */}
-        <div className="w-[36px] shrink-0 border-l border-slate-700/30 flex flex-col items-center justify-center bg-amber-500/5" title="Требуется проверка">
-          <svg className="w-5 h-5 text-amber-400 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <circle cx="12" cy="12" r="10" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
-          </svg>
-        </div>
-      </div>
-      
-      {/* Кнопка подтверждения на всю ширину снизу */}
-      <div className="p-1 px-1.5 bg-amber-500/10 border-t border-amber-500/20">
-        <button
+        <div 
           onClick={handleConfirm}
-          disabled={confirmed}
-          className="w-full py-2 rounded-md text-xs font-bold bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-[0.98] transition-all shadow-md shadow-amber-500/20 uppercase tracking-wide"
+          className={`w-[48px] shrink-0 border-l border-slate-700/30 flex flex-col items-center justify-center transition-colors cursor-pointer ${confirmed ? 'bg-emerald-500/10' : 'bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30'}`}
+          title="Подтвердить совпадение"
         >
-          {confirmed ? 'Утверждено' : 'Подтвердить совпадение'}
-        </button>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg ${confirmed ? 'bg-emerald-500/20 shadow-emerald-500/20' : 'bg-amber-500/20 shadow-amber-500/20 animate-pulse'}`}>
+            <svg className={`w-4 h-4 ${confirmed ? 'text-emerald-400' : 'text-amber-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          {!confirmed && <span className="text-[8px] text-amber-500/80 font-bold mt-1 uppercase">ОК?</span>}
+        </div>
       </div>
     </div>
   );
@@ -205,7 +200,7 @@ export function RedRow({ item, onSelect }: RedRowProps) {
           >
             <CopyToast show={copiedId === 'client'} />
             <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-sm text-slate-300 font-medium leading-tight line-clamp-2">{item.original_name}</p>
+            <p className="text-sm text-slate-300 font-medium leading-tight">{item.original_name}</p>
             <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
