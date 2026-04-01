@@ -42,8 +42,8 @@ export function GreenRow({ item }: GreenRowProps) {
 
 
   return (
-    <div className="glass-card card-green mb-2 overflow-visible relative group">
-      <div className="flex w-full min-h-[60px]">
+    <div className="glass-card card-green mb-2 overflow-visible relative group sm:mb-1.5">
+      <div className="flex w-full min-h-[60px] sm:min-h-[50px]">
         {/* Колонки с позициями */}
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
@@ -53,9 +53,9 @@ export function GreenRow({ item }: GreenRowProps) {
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
-            <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-[13px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
-            <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
+            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
+            <p className="text-[13px] sm:text-[11.5px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
+            <p className="text-[10px] sm:text-[9px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
           {/* Колонка 2: 1С */}
@@ -64,9 +64,9 @@ export function GreenRow({ item }: GreenRowProps) {
             onClick={(e) => copy('1c', item.matched_name || '', e)}
           >
             <CopyToast show={copiedId === '1c'} />
-            <p className="text-[9px] uppercase tracking-wider text-emerald-500/70 mb-0.5">Предложение 1С</p>
-            <p className="text-[13px] text-emerald-100 font-medium leading-tight">{item.matched_name}</p>
-            <p className="text-[10px] text-emerald-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
+            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-emerald-500/70 mb-0.5">Предложение 1С</p>
+            <p className="text-[13px] sm:text-[11.5px] text-emerald-100 font-medium leading-tight">{item.matched_name}</p>
+            <p className="text-[10px] sm:text-[9px] text-emerald-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
           </div>
         </div>
 
@@ -98,8 +98,8 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
   };
 
   return (
-    <div className={`glass-card card-yellow mb-2 overflow-visible relative transition-all duration-300 ${confirmed ? 'scale-95 opacity-50' : ''}`}>
-      <div className="flex w-full min-h-[60px]">
+    <div className={`glass-card card-yellow mb-2 overflow-visible relative transition-all duration-300 ${confirmed ? 'scale-95 opacity-50' : ''} sm:mb-1.5`}>
+      <div className="flex w-full min-h-[60px] sm:min-h-[50px]">
         {/* Колонки с позициями */}
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
@@ -109,9 +109,9 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
-            <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-[13px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
-            <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
+            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
+            <p className="text-[13px] sm:text-[11.5px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
+            <p className="text-[10px] sm:text-[9px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
           {/* Колонка 2: 1С */}
@@ -121,11 +121,11 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
           >
             <CopyToast show={copiedId === '1c'} />
             <div className="flex items-center gap-1.5 mb-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-amber-500/80 font-bold">ИИ-Подбор 1С</p>
-              <span className="text-[9px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">{Math.round(item.confidence * 100)}%</span>
+              <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-amber-500/80 font-bold">ИИ-Подбор 1С</p>
+              <span className="text-[9px] sm:text-[8px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">{Math.round(item.confidence * 100)}%</span>
             </div>
-            <p className="text-[13px] text-amber-100 font-medium leading-tight">{item.matched_name}</p>
-            <p className="text-[10px] text-amber-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
+            <p className="text-[13px] sm:text-[11.5px] text-amber-100 font-medium leading-tight">{item.matched_name}</p>
+            <p className="text-[10px] sm:text-[9px] text-amber-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
           </div>
         </div>
 
@@ -189,8 +189,8 @@ export function RedRow({ item, onSelect }: RedRowProps) {
   };
 
   return (
-    <div className="glass-card card-red mb-2 overflow-visible relative">
-      <div className="flex w-full min-h-[60px]">
+    <div className="glass-card card-red mb-2 overflow-visible relative sm:mb-1.5">
+      <div className="flex w-full min-h-[60px] sm:min-h-[50px]">
         {/* Колонки с позициями */}
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
@@ -200,14 +200,14 @@ export function RedRow({ item, onSelect }: RedRowProps) {
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
-            <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-[13px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
-            <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
+            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
+            <p className="text-[13px] sm:text-[11.5px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
+            <p className="text-[10px] sm:text-[9px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
           {/* Колонка 2: 1С (Dropdown / Интерактивная) */}
           <div className="p-2 flex flex-col justify-center bg-red-500/5 relative cursor-pointer" onClick={handleDropdownOpen}>
-            <p className="text-[9px] uppercase tracking-wider text-red-400/80 font-bold mb-1">Выбрать позицию 1С</p>
+            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-red-400/80 font-bold mb-1">Выбрать позицию 1С</p>
             <div className="relative w-full">
               <input
                 type="text"
@@ -215,7 +215,7 @@ export function RedRow({ item, onSelect }: RedRowProps) {
                 onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
                 onFocus={() => setIsOpen(true)}
                 placeholder="Найти в справочнике..."
-                className="w-full px-2 py-1.5 rounded bg-slate-800/80 border border-red-500/30 text-xs text-slate-200 placeholder-red-400/40 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400/50 transition-all font-medium h-[28px]"
+                className="w-full px-2 py-1.5 sm:py-1 rounded bg-slate-800/80 border border-red-500/30 text-xs sm:text-[11px] text-slate-200 placeholder-red-400/40 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400/50 transition-all font-medium h-[28px] sm:h-[24px]"
               />
               {/* Dropdown list */}
               {isOpen && (results.length > 0 || isLoading || query.length > 0) && (

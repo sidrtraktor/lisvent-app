@@ -183,16 +183,13 @@ export function MatchingTable() {
 
   /* === MAIN TABLE === */
   const handleCopyTable = async () => {
-    // Вставляем Клиент и ИНН сверху, без шапки таблицы
     const clientHeader = `${session?.client_name || 'Заказ'}\nИНН: Не указан\n\n`;
     
-    // Берем только позиции 1С (название, кол-во, ед.изм.)
     const tsv = items.map(i => {
       const name = i.matched_name || '';
       const qty1c = i.converted_quantity ?? i.original_quantity ?? '';
       const unit1c = i.matched_unit ?? 'шт';
       
-      // Формат: Название \t Количество \t Ед.изм.
       return `${name}\t${qty1c}\t${unit1c}`;
     }).join('\n');
     
@@ -211,11 +208,10 @@ export function MatchingTable() {
       <div className="sticky top-0 z-30 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-slate-700/30 py-4 mb-2 px-2">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-base font-bold text-slate-100 tracking-tight">
+            <h1 className="text-base sm:text-sm font-bold text-slate-100 tracking-tight">
               {session?.client_name || 'Заказ'}
             </h1>
-            {/* TODO: потом занесем в базу INN */}
-            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">ИНН: Не указан</p>
+            <p className="text-[10px] sm:text-[9px] text-slate-400 mt-0.5 font-medium">ИНН: Не указан</p>
           </div>
           <span className="text-[11px] text-slate-500 font-mono mt-1">
             #{session?.session_id}
@@ -227,7 +223,7 @@ export function MatchingTable() {
           <StatusBadge color="emerald" count={green} label="OK" />
           <StatusBadge color="amber" count={yellow} label="Проверить" />
           <StatusBadge color="red" count={red} label="Не найдено" />
-          <span className="text-[11px] text-slate-500 ml-auto font-medium">
+          <span className="text-[10px] sm:text-[9px] text-slate-500 ml-auto font-medium">
             {items.length} позиций
           </span>
         </div>
