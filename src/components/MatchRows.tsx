@@ -48,7 +48,8 @@ export function GreenRow({ item }: GreenRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="py-3 pl-6 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            style={{ paddingLeft: '24px' }}
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
@@ -103,7 +104,8 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="py-3 pl-6 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            style={{ paddingLeft: '24px' }}
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
@@ -193,7 +195,8 @@ export function RedRow({ item, onSelect }: RedRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="py-3 pl-6 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            style={{ paddingLeft: '24px' }}
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />

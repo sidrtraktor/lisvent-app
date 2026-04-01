@@ -9,7 +9,10 @@ function App() {
 
   return (
     <div className="w-full flex justify-center bg-[#0a0f1e] min-h-screen">
-      <div className="w-full max-w-xl px-4 sm:px-6 py-4 flex flex-col">
+      <div 
+        className="w-full max-w-xl flex flex-col"
+        style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px' }}
+      >
         <MatchingTable />
       </div>
     </div>
