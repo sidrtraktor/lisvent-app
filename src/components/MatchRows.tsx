@@ -48,7 +48,7 @@ export function GreenRow({ item }: GreenRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="py-2.5 pl-4 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            className="py-3 pl-6 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
@@ -59,7 +59,7 @@ export function GreenRow({ item }: GreenRowProps) {
           
           {/* Колонка 2: 1С */}
           <div 
-            className="py-2.5 px-3 flex flex-col justify-center cursor-pointer hover:bg-emerald-500/5 active:bg-emerald-500/10 transition-colors relative"
+            className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-emerald-500/5 active:bg-emerald-500/10 transition-colors relative"
             onClick={(e) => copy('1c', item.matched_name || '', e)}
           >
             <CopyToast show={copiedId === '1c'} />
@@ -103,7 +103,7 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="py-2.5 pl-4 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            className="py-3 pl-6 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
@@ -114,7 +114,7 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
           
           {/* Колонка 2: 1С */}
           <div 
-            className="py-2.5 px-3 flex flex-col justify-center cursor-pointer hover:bg-amber-500/5 active:bg-amber-500/10 transition-colors relative"
+            className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-amber-500/5 active:bg-amber-500/10 transition-colors relative"
             onClick={(e) => copy('1c', item.matched_name || '', e)}
           >
             <CopyToast show={copiedId === '1c'} />
@@ -193,7 +193,7 @@ export function RedRow({ item, onSelect }: RedRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="py-2.5 pl-4 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            className="py-3 pl-6 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
             onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />

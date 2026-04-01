@@ -231,7 +231,7 @@ export function MatchingTable() {
       </div>
 
       {/* Items list */}
-      <div className="flex-1 p-3">
+      <div className="flex-1 px-4 py-3">
         {items.filter((i) => i.status === 'red').map((item) => (
           <RedRow key={`r-${item.id}`} item={item} onSelect={handleSelectRed} />
         ))}
