@@ -39,8 +39,7 @@ interface GreenRowProps {
 
 export function GreenRow({ item }: GreenRowProps) {
   const { copiedId, copy } = useCopier();
-  const text1c = `${item.matched_name}\t${item.converted_quantity ?? item.original_quantity}\t${item.matched_unit}`;
-  const textClient = `${item.original_name}\t${item.original_quantity}\t${item.original_unit}`;
+
 
   return (
     <div className="glass-card card-green mb-2 overflow-visible relative group">
@@ -49,23 +48,23 @@ export function GreenRow({ item }: GreenRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="p-2.5 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            onClick={(e) => copy('client', textClient, e)}
+            className="py-2.5 pl-4 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
             <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-sm text-slate-300 font-medium leading-tight">{item.original_name}</p>
+            <p className="text-[13px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
             <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
           {/* Колонка 2: 1С */}
           <div 
-            className="p-2.5 flex flex-col justify-center cursor-pointer hover:bg-emerald-500/5 active:bg-emerald-500/10 transition-colors relative"
-            onClick={(e) => copy('1c', text1c, e)}
+            className="py-2.5 px-3 flex flex-col justify-center cursor-pointer hover:bg-emerald-500/5 active:bg-emerald-500/10 transition-colors relative"
+            onClick={(e) => copy('1c', item.matched_name || '', e)}
           >
             <CopyToast show={copiedId === '1c'} />
             <p className="text-[9px] uppercase tracking-wider text-emerald-500/70 mb-0.5">Предложение 1С</p>
-            <p className="text-sm text-emerald-100 font-medium leading-tight">{item.matched_name}</p>
+            <p className="text-[13px] text-emerald-100 font-medium leading-tight">{item.matched_name}</p>
             <p className="text-[10px] text-emerald-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
           </div>
         </div>
@@ -89,8 +88,7 @@ interface YellowRowProps {
 
 export function YellowRow({ item, onConfirm }: YellowRowProps) {
   const { copiedId, copy } = useCopier();
-  const text1c = `${item.matched_name}\t${item.converted_quantity ?? item.original_quantity}\t${item.matched_unit}`;
-  const textClient = `${item.original_name}\t${item.original_quantity}\t${item.original_unit}`;
+
   const [confirmed, setConfirmed] = useState(false);
 
   const handleConfirm = () => {
@@ -105,26 +103,26 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="p-2.5 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            onClick={(e) => copy('client', textClient, e)}
+            className="py-2.5 pl-4 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
             <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-sm text-slate-300 font-medium leading-tight">{item.original_name}</p>
+            <p className="text-[13px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
             <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
           {/* Колонка 2: 1С */}
           <div 
-            className="p-2.5 flex flex-col justify-center cursor-pointer hover:bg-amber-500/5 active:bg-amber-500/10 transition-colors relative"
-            onClick={(e) => copy('1c', text1c, e)}
+            className="py-2.5 px-3 flex flex-col justify-center cursor-pointer hover:bg-amber-500/5 active:bg-amber-500/10 transition-colors relative"
+            onClick={(e) => copy('1c', item.matched_name || '', e)}
           >
             <CopyToast show={copiedId === '1c'} />
             <div className="flex items-center gap-1.5 mb-0.5">
               <p className="text-[9px] uppercase tracking-wider text-amber-500/80 font-bold">ИИ-Подбор 1С</p>
               <span className="text-[9px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">{Math.round(item.confidence * 100)}%</span>
             </div>
-            <p className="text-sm text-amber-100 font-medium leading-tight">{item.matched_name}</p>
+            <p className="text-[13px] text-amber-100 font-medium leading-tight">{item.matched_name}</p>
             <p className="text-[10px] text-amber-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
           </div>
         </div>
@@ -155,7 +153,7 @@ interface RedRowProps {
 
 export function RedRow({ item, onSelect }: RedRowProps) {
   const { copiedId, copy } = useCopier();
-  const textClient = `${item.original_name}\t${item.original_quantity}\t${item.original_unit}`;
+
   
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<StandardItem[]>([]);
@@ -195,12 +193,12 @@ export function RedRow({ item, onSelect }: RedRowProps) {
         <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
           {/* Колонка 1: Заявка */}
           <div 
-            className="p-2.5 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            onClick={(e) => copy('client', textClient, e)}
+            className="py-2.5 pl-4 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
+            onClick={(e) => copy('client', item.original_name, e)}
           >
             <CopyToast show={copiedId === 'client'} />
             <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-sm text-slate-300 font-medium leading-tight">{item.original_name}</p>
+            <p className="text-[13px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
             <p className="text-[10px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           

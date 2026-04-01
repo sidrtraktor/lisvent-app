@@ -206,11 +206,15 @@ export function MatchingTable() {
     <div className="flex flex-col min-h-screen pb-36">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-slate-700/30 px-4 py-3.5">
-        <div className="flex items-center justify-between">
-          <h1 className="text-base font-bold text-slate-100 tracking-tight">
-            {session?.client_name || 'Заказ'}
-          </h1>
-          <span className="text-[11px] text-slate-500 font-mono">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-base font-bold text-slate-100 tracking-tight">
+              {session?.client_name || 'Заказ'}
+            </h1>
+            {/* TODO: потом занесем в базу INN */}
+            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">ИНН: Не указан</p>
+          </div>
+          <span className="text-[11px] text-slate-500 font-mono mt-1">
             #{session?.session_id}
           </span>
         </div>
