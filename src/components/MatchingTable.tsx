@@ -182,8 +182,28 @@ export function MatchingTable() {
   }
 
   /* === MAIN TABLE === */
+  const handleCopyTable = async () => {
+    const header = "Заявка\tКол-во\tЕд.изм.\tНайдено 1С\tКол-во 1С\tФормат 1С\tСтатус";
+    const tsv = [
+      header,
+      ...items.map(i => {
+        const status = i.status === 'green' ? 'OK' : i.status === 'yellow' ? 'AI' : 'NOT FOUND';
+        const qty1c = i.converted_quantity ?? i.original_quantity ?? '';
+        const unit1c = i.matched_unit ?? '';
+        return `${i.original_name}\t${i.original_quantity}\t${i.original_unit}\t${i.matched_name || ''}\t${qty1c}\t${unit1c}\t${status}`;
+      })
+    ].join('\n');
+    
+    try {
+      await navigator.clipboard.writeText(tsv);
+      alert('Таблица скопирована в буфер обмена!'); // Simple fallback for now
+    } catch {
+      alert('Ошибка копирования');
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen pb-24">
+    <div className="flex flex-col min-h-screen pb-36">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-slate-700/30 px-4 py-3.5">
         <div className="flex items-center justify-between">
@@ -219,8 +239,8 @@ export function MatchingTable() {
         ))}
       </div>
 
-      {/* Sticky approve button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#0a0f1e]/90 backdrop-blur-xl border-t border-slate-700/30">
+      {/* Sticky footer buttons */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#0a0f1e]/90 backdrop-blur-xl border-t border-slate-700/30 flex flex-col gap-3">
         <button
           onClick={handleApprove}
           disabled={approving}
@@ -234,6 +254,15 @@ export function MatchingTable() {
           ) : (
             'Утвердить и отправить в 1С'
           )}
+        </button>
+        <button
+          onClick={handleCopyTable}
+          className="w-full py-3 rounded-xl font-medium text-sm bg-slate-800/80 text-slate-300 border border-slate-700 hover:bg-slate-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          Скопировать таблицу
         </button>
       </div>
     </div>
