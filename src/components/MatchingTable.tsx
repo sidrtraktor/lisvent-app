@@ -183,24 +183,27 @@ export function MatchingTable() {
 
   /* === MAIN TABLE === */
   const handleCopyTable = async () => {
-    const header = "Заявка\tКол-во\tЕд.изм.\tНайдено 1С\tКол-во 1С\tФормат 1С\tСтатус";
-    const tsv = [
-      header,
-      ...items.map(i => {
-        const status = i.status === 'green' ? 'OK' : i.status === 'yellow' ? 'AI' : 'NOT FOUND';
-        const qty1c = i.converted_quantity ?? i.original_quantity ?? '';
-        const unit1c = i.matched_unit ?? '';
-        return `${i.original_name}\t${i.original_quantity}\t${i.original_unit}\t${i.matched_name || ''}\t${qty1c}\t${unit1c}\t${status}`;
-      })
-    ].join('\n');
+    // Вставляем Клиент и ИНН сверху, без шапки таблицы
+    const clientHeader = `${session?.client_name || 'Заказ'}\nИНН: Не указан\n\n`;
+    
+    // Берем только позиции 1С (название, кол-во, ед.изм.)
+    const tsv = items.map(i => {
+      const name = i.matched_name || '';
+      const qty1c = i.converted_quantity ?? i.original_quantity ?? '';
+      const unit1c = i.matched_unit ?? 'шт';
+      
+      // Формат: Название \t Количество \t Ед.изм.
+      return `${name}\t${qty1c}\t${unit1c}`;
+    }).join('\n');
     
     try {
-      await navigator.clipboard.writeText(tsv);
-      alert('Таблица скопирована в буфер обмена!'); // Simple fallback for now
+      await navigator.clipboard.writeText(clientHeader + tsv);
+      alert('Данные для 1С скопированы!');
     } catch {
       alert('Ошибка копирования');
     }
   };
+
 
   return (
     <div className="flex flex-col min-h-screen pb-36">
@@ -231,7 +234,7 @@ export function MatchingTable() {
       </div>
 
       {/* Items list */}
-      <div className="flex-1 px-4 py-3">
+      <div className="flex-1 w-[92%] max-w-2xl mx-auto py-3">
         {items.filter((i) => i.status === 'red').map((item) => (
           <RedRow key={`r-${item.id}`} item={item} onSelect={handleSelectRed} />
         ))}
