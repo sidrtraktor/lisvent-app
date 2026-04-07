@@ -257,7 +257,7 @@ interface RedRowProps {
 export function RedRow({ item, onSelect }: RedRowProps) {
   const { copiedId, copy } = useCopier();
 
-  
+  const [isEditing, setIsEditing] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<StandardItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -284,11 +284,6 @@ export function RedRow({ item, onSelect }: RedRowProps) {
     return () => clearTimeout(timer);
   }, [query, doSearch]);
 
-  const handleDropdownOpen = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsOpen(true);
-  };
-
   return (
     <div className="glass-card card-red mb-2 overflow-visible relative sm:mb-1.5">
       <div className="flex w-full min-h-[60px] sm:min-h-[50px]">
@@ -306,64 +301,102 @@ export function RedRow({ item, onSelect }: RedRowProps) {
             <p className="text-[10px] sm:text-[9px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
           </div>
           
-          {/* Колонка 2: 1С (Dropdown / Интерактивная) */}
-          <div className="p-2 flex flex-col justify-center bg-red-500/5 relative cursor-pointer" onClick={handleDropdownOpen}>
-            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-red-400/80 font-bold mb-1">Выбрать позицию 1С</p>
-            <div className="relative w-full">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
-                onFocus={() => setIsOpen(true)}
-                placeholder="Найти в справочнике..."
-                className="w-full px-2 py-1.5 sm:py-1 rounded bg-slate-800/80 border border-red-500/30 text-xs sm:text-[11px] text-slate-200 placeholder-red-400/40 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400/50 transition-all font-medium h-[28px] sm:h-[24px]"
-              />
-              {/* Dropdown list */}
-              {isOpen && (results.length > 0 || isLoading || query.length > 0) && (
-                <div className="absolute z-50 w-[220px] sm:w-full right-0 sm:left-0 top-[32px] max-h-48 overflow-y-auto rounded-md bg-slate-800 border border-slate-600 shadow-xl shadow-black/80 ring-1 ring-black/50">
-                  {isLoading ? (
-                    <div className="px-3 py-4 text-center text-xs text-slate-400">Поиск...</div>
-                  ) : results.length > 0 ? (
-                    results.map((dbItem) => (
-                      <button
-                        key={dbItem.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelect(item.id, dbItem.name);
-                          setIsOpen(false);
-                          setQuery('');
-                        }}
-                        className="w-full text-left px-2.5 py-2 text-xs text-slate-200 hover:bg-slate-700 transition-colors border-b border-slate-700/50 last:border-0 leading-tight"
+          {/* Колонка 2: Подбор 1С */}
+          <div 
+            className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-red-500/5 active:bg-red-500/10 transition-colors relative"
+            onClick={(e) => {
+              if (!isEditing && item.matched_name) copy('1c', item.matched_name, e);
+            }}
+          >
+            <CopyToast show={copiedId === '1c'} />
+            <div className="flex items-center justify-between mb-0.5">
+              <div className="flex items-center gap-1.5">
+                <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-red-500/80 font-bold">
+                  {isEditing ? 'РУЧНОЙ ПОИСК' : (item.matched_name ? 'Не точное' : 'Не найдено')}
+                </p>
+                {!isEditing && item.confidence > 0 && (
+                  <span className="text-[9px] sm:text-[8px] font-bold text-red-900 bg-red-400 px-1 py-[1px] rounded leading-none">
+                    {Math.round(item.confidence * 100)}%
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {isEditing ? (
+              <div className="mt-1" onClick={(e) => e.stopPropagation()}>
+                <div className="relative w-full text-left">
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
+                    onFocus={() => setIsOpen(true)}
+                    placeholder="Найти в справочнике..."
+                    className="w-full px-2 py-1.5 rounded bg-slate-800/80 border border-red-500/30 text-xs text-slate-200 placeholder-red-400/40 focus:outline-none focus:border-red-400 transition-all h-[28px]"
+                  />
+                  {isOpen && (results.length > 0 || isLoading || query.length > 0) && (
+                    <div className="absolute z-50 w-[220px] right-0 top-[32px] max-h-48 overflow-y-auto rounded-md bg-slate-800 border border-slate-600 shadow-xl ring-1 ring-black/50">
+                      {isLoading ? (
+                        <div className="px-3 py-4 text-center text-xs text-slate-400">Поиск...</div>
+                      ) : results.length > 0 ? (
+                        results.map((dbItem) => (
+                          <button
+                            key={dbItem.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelect(item.id, dbItem.name);
+                              setIsOpen(false);
+                              setIsEditing(false);
+                              setQuery('');
+                            }}
+                            className="w-full text-left px-2.5 py-2 text-xs text-slate-200 hover:bg-slate-700 transition-colors border-b border-slate-700/50 last:border-0"
+                          >
+                            {dbItem.name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-3 py-3 text-center text-xs text-slate-500">Не найдено</div>
+                      )}
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setIsOpen(false); setIsEditing(false); }}
+                        className="w-full text-center px-2 py-1 text-[10px] text-slate-400 bg-slate-900/50 hover:bg-slate-700 border-t border-slate-600"
                       >
-                        {dbItem.name}
+                        Отмена
                       </button>
-                    ))
-                  ) : (
-                    <div className="px-3 py-3 text-center text-xs text-slate-500 border-t border-slate-700/30">
-                      Не найдено
                     </div>
                   )}
-                  {/* Опция закрыть */}
+                </div>
+              </div>
+            ) : (
+              <>
+                {item.matched_name ? (
+                  <p className="text-[13px] sm:text-[11.5px] text-red-200/70 font-medium leading-tight">{item.matched_name}</p>
+                ) : (
+                  <p className="text-[12px] sm:text-[11px] text-red-400/50 italic leading-tight">Нет совпадений в базе 1С</p>
+                )}
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-[10px] sm:text-[9px] text-red-400/60 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
-                    className="w-full text-center px-2 py-1 text-[10px] text-slate-400 bg-slate-900/50 hover:bg-slate-700 border-t border-slate-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditing(true);
+                    }}
+                    className="text-[9px] sm:text-[8px] uppercase font-bold text-red-600 hover:text-red-400 border border-red-600/50 hover:border-red-400 rounded px-2 py-0.5 transition-colors"
                   >
-                    Закрыть
+                    Заменить
                   </button>
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Колонка 3: Статус (Узкая) */}
         <div 
-          className="w-[36px] shrink-0 border-l border-slate-700/30 flex flex-col items-center justify-center bg-red-500/5 cursor-pointer hover:bg-red-500/10 active:bg-red-500/20 transition-colors" 
-          title="Открыть поиск"
-          onClick={handleDropdownOpen}
+          className="w-[36px] shrink-0 border-l border-slate-700/30 flex flex-col items-center justify-center bg-red-500/5"
+          title="Не точное совпадение"
         >
-          <svg className="w-5 h-5 text-red-500 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" />
+          <svg className="w-5 h-5 text-red-500/70 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
           </svg>
         </div>
       </div>
@@ -401,6 +434,14 @@ function SourceBadge({ source }: { source: string | null }) {
     return (
       <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 truncate max-w-[60px]" title="Жестко заданное правило">
         100% Match
+      </span>
+    );
+  }
+
+  if (source === 'fuzzy') {
+    return (
+      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 truncate max-w-[60px]" title="Текстовый подбор (ИИ отклонила)">
+        Подбор
       </span>
     );
   }
