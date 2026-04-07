@@ -230,7 +230,7 @@ export function MatchingTable() {
       </div>
 
       {/* Items list */}
-      <div className="flex-1 w-full flex flex-col gap-2 pb-28">
+      <div className="flex-1 w-full flex flex-col pb-28">
         {items.filter((i) => i.status === 'red').map((item) => (
           <RedRow key={`r-${item.id}`} item={item} onSelect={handleSelectRed} />
         ))}

@@ -20,13 +20,84 @@ function useCopier() {
   return { copiedId, copy };
 }
 
-/* ===== Toast Hint ===== */
-function CopyToast({ show }: { show: boolean }) {
-  if (!show) return null;
+/* ===== Inline Search (shared) ===== */
+function InlineSearch({
+  onSelect,
+  onCancel,
+  borderColor = 'amber',
+}: {
+  onSelect: (name: string) => void;
+  onCancel: () => void;
+  borderColor?: string;
+}) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<StandardItem[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const doSearch = useCallback(async (q: string) => {
+    if (!q.trim()) { setResults([]); return; }
+    setIsLoading(true);
+    try {
+      const data = await searchStandardDb(q);
+      setResults(data);
+    } catch {
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => doSearch(query), 300);
+    return () => clearTimeout(timer);
+  }, [query, doSearch]);
+
+  const borderClasses: Record<string, string> = {
+    amber: 'border-amber-500/30 focus:border-amber-400 placeholder-amber-400/40',
+    red: 'border-red-500/30 focus:border-red-400 placeholder-red-400/40',
+  };
+
   return (
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full mb-1 z-50 pointer-events-none">
-      <div className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg animate-fade-in-up whitespace-nowrap">
-        Скопировано!
+    <div className="mt-1" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full text-left">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
+          onFocus={() => setIsOpen(true)}
+          autoFocus
+          placeholder="Найти в справочнике..."
+          className={`w-full px-2 py-1 rounded bg-slate-800/80 border text-xs text-slate-200 focus:outline-none transition-all h-[28px] ${borderClasses[borderColor] || borderClasses.amber}`}
+        />
+        {isOpen && (results.length > 0 || isLoading || query.length > 0) && (
+          <div className="absolute z-50 w-[220px] right-0 top-[32px] max-h-48 overflow-y-auto rounded-md bg-slate-800 border border-slate-600 shadow-xl ring-1 ring-black/50">
+            {isLoading ? (
+              <div className="px-3 py-3 text-center text-xs text-slate-400">Поиск...</div>
+            ) : results.length > 0 ? (
+              results.map((dbItem) => (
+                <button
+                  key={dbItem.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(dbItem.name);
+                  }}
+                  className="w-full text-left px-2.5 py-1.5 text-xs text-slate-200 hover:bg-slate-700 transition-colors border-b border-slate-700/50 last:border-0"
+                >
+                  {dbItem.name}
+                </button>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-center text-xs text-slate-500">Не найдено</div>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); onCancel(); }}
+              className="w-full text-center px-2 py-1 text-[10px] text-slate-400 bg-slate-900/50 hover:bg-slate-700 border-t border-slate-600"
+            >
+              Отмена
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -40,44 +111,31 @@ interface GreenRowProps {
 export function GreenRow({ item }: GreenRowProps) {
   const { copiedId, copy } = useCopier();
 
-
   return (
-    <div className="glass-card card-green mb-2 overflow-visible relative group sm:mb-1.5">
-      <div className="flex w-full min-h-[60px] sm:min-h-[50px]">
-        {/* Колонки с позициями */}
-        <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
-          {/* Колонка 1: Заявка */}
-          <div 
-            className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            style={{ paddingLeft: '6px' }}
-            onClick={(e) => copy('client', item.original_name, e)}
-          >
-            <CopyToast show={copiedId === 'client'} />
-            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-[13px] sm:text-[11.5px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
-            <p className="text-[10px] sm:text-[9px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
-          </div>
-          
-          {/* Колонка 2: 1С */}
-          <div 
-            className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-emerald-500/5 active:bg-emerald-500/10 transition-colors relative group/col"
-            onClick={(e) => copy('1c', item.matched_name || '', e)}
-          >
-            <CopyToast show={copiedId === '1c'} />
-            <div className="flex items-center justify-between mb-0.5">
-              <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-emerald-500/70">Предложение 1С</p>
-              <SourceBadge source={item.verified_by} />
-            </div>
-            <p className="text-[13px] sm:text-[11.5px] text-emerald-100 font-medium leading-tight">{item.matched_name}</p>
-            <p className="text-[10px] sm:text-[9px] text-emerald-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
-          </div>
-        </div>
+    <div className="match-row" style={{ borderLeftColor: 'var(--clr-green)' }}>
+      {/* Left: client */}
+      <div
+        className="match-left"
+        onClick={(e) => copy('client', item.original_name, e)}
+      >
+        {copiedId === 'client' && <span className="copy-flash">OK</span>}
+        <span className="match-name">{item.original_name}</span>
+        <span className="match-qty">{item.original_quantity} {item.original_unit}</span>
+      </div>
 
-        {/* Колонка 3: Статус (Узкая) */}
-        <div className="w-[36px] shrink-0 border-l border-slate-700/30 flex flex-col items-center justify-center bg-emerald-500/5" title="Точное совпадение">
-          <svg className="w-5 h-5 text-emerald-400 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+      {/* Right: 1C match */}
+      <div className="match-right">
+        <div
+          className="match-right-text"
+          onClick={(e) => copy('1c', item.matched_name || '', e)}
+        >
+          {copiedId === '1c' && <span className="copy-flash">OK</span>}
+          <span className="match-name-1c green">{item.matched_name}</span>
+          <span className="match-qty-1c">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</span>
+        </div>
+        <div className="match-actions">
+          <span className="match-pct green">{Math.round(item.confidence * 100)}%</span>
+          <SourceTag source={item.verified_by} />
         </div>
       </div>
     </div>
@@ -92,35 +150,8 @@ interface YellowRowProps {
 
 export function YellowRow({ item, onConfirm }: YellowRowProps) {
   const { copiedId, copy } = useCopier();
-
   const [confirmed, setConfirmed] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<StandardItem[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const doSearch = useCallback(async (q: string) => {
-    if (!q.trim()) {
-      setResults([]);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const data = await searchStandardDb(q);
-      setResults(data);
-    } catch {
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => doSearch(query), 300);
-    return () => clearTimeout(timer);
-  }, [query, doSearch]);
 
   const handleConfirm = () => {
     setConfirmed(true);
@@ -128,121 +159,52 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
   };
 
   return (
-    <div className={`glass-card card-yellow mb-2 overflow-visible relative transition-all duration-300 ${confirmed ? 'scale-95 opacity-50' : ''} sm:mb-1.5`}>
-      <div className="flex w-full min-h-[60px] sm:min-h-[50px]">
-        {/* Колонки с позициями */}
-        <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
-          {/* Колонка 1: Заявка */}
-          <div 
-            className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            style={{ paddingLeft: '6px' }}
-            onClick={(e) => copy('client', item.original_name, e)}
-          >
-            <CopyToast show={copiedId === 'client'} />
-            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-[13px] sm:text-[11.5px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
-            <p className="text-[10px] sm:text-[9px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
-          </div>
-          
-          {/* Колонка 2: 1С */}
-          <div 
-            className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-amber-500/5 active:bg-amber-500/10 transition-colors relative"
-            onClick={(e) => {
-              if (!isEditing) copy('1c', item.matched_name || '', e);
-            }}
-          >
-            <CopyToast show={copiedId === '1c'} />
-            <div className="flex items-center justify-between mb-0.5">
-              <div className="flex items-center gap-1.5">
-                <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-amber-500/80 font-bold">
-                  {isEditing ? 'РУЧНОЙ ПОИСК' : 'ИИ-Подбор 1С'}
-                </p>
-                {!isEditing && (
-                  <span className="text-[9px] sm:text-[8px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">
-                    {Math.round(item.confidence * 100)}%
-                  </span>
-                )}
-              </div>
-              {!isEditing && <SourceBadge source={item.verified_by} />}
-            </div>
-            
-            {isEditing ? (
-              <div className="mt-1" onClick={(e) => e.stopPropagation()}>
-                <div className="relative w-full text-left">
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
-                    onFocus={() => setIsOpen(true)}
-                    placeholder="Найти в справочнике..."
-                    className="w-full px-2 py-1.5 rounded bg-slate-800/80 border border-amber-500/30 text-xs text-slate-200 placeholder-amber-400/40 focus:outline-none focus:border-amber-400 transition-all h-[28px]"
-                  />
-                  {isOpen && (results.length > 0 || isLoading || query.length > 0) && (
-                    <div className="absolute z-50 w-[220px] right-0 top-[32px] max-h-48 overflow-y-auto rounded-md bg-slate-800 border border-slate-600 shadow-xl ring-1 ring-black/50">
-                      {isLoading ? (
-                        <div className="px-3 py-4 text-center text-xs text-slate-400">Поиск...</div>
-                      ) : results.length > 0 ? (
-                        results.map((dbItem) => (
-                          <button
-                            key={dbItem.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onConfirm(item.id, dbItem.name, 1);
-                              setIsOpen(false);
-                              setIsEditing(false);
-                              setQuery('');
-                            }}
-                            className="w-full text-left px-2.5 py-2 text-xs text-slate-200 hover:bg-slate-700 transition-colors border-b border-slate-700/50 last:border-0"
-                          >
-                            {dbItem.name}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-3 py-3 text-center text-xs text-slate-500">Не найдено</div>
-                      )}
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setIsOpen(false); setIsEditing(false); }}
-                        className="w-full text-center px-2 py-1 text-[10px] text-slate-400 bg-slate-900/50 hover:bg-slate-700 border-t border-slate-600"
-                      >
-                        Отмена
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <>
-                <p className="text-[13px] sm:text-[11.5px] text-amber-100 font-medium leading-tight">{item.matched_name}</p>
-                <div className="flex items-center justify-between mt-1">
-                  <p className="text-[10px] sm:text-[9px] text-amber-400/80 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditing(true);
-                    }}
-                    className="text-[9px] sm:text-[8px] uppercase font-bold text-amber-600 hover:text-amber-400 border border-amber-600/50 hover:border-amber-400 rounded px-2 py-0.5 transition-colors"
-                  >
-                    Заменить
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+    <div
+      className={`match-row ${confirmed ? 'confirmed' : ''}`}
+      style={{ borderLeftColor: 'var(--clr-yellow)' }}
+    >
+      {/* Left: client */}
+      <div
+        className="match-left"
+        onClick={(e) => copy('client', item.original_name, e)}
+      >
+        {copiedId === 'client' && <span className="copy-flash">OK</span>}
+        <span className="match-name">{item.original_name}</span>
+        <span className="match-qty">{item.original_quantity} {item.original_unit}</span>
+      </div>
 
-        {/* Колонка 3: Статус (Узкая) */}
-        <div 
-          onClick={handleConfirm}
-          className={`w-[48px] shrink-0 border-l border-slate-700/30 flex flex-col items-center justify-center transition-colors cursor-pointer ${confirmed ? 'bg-emerald-500/10' : 'bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30'}`}
-          title="Подтвердить совпадение"
-        >
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg ${confirmed ? 'bg-emerald-500/20 shadow-emerald-500/20' : 'bg-amber-500/20 shadow-amber-500/20 animate-pulse'}`}>
-            <svg className={`w-4 h-4 ${confirmed ? 'text-emerald-400' : 'text-amber-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          {!confirmed && <span className="text-[8px] text-amber-500/80 font-bold mt-1 uppercase">ОК?</span>}
-        </div>
+      {/* Right: 1C match */}
+      <div className="match-right">
+        {isEditing ? (
+          <InlineSearch
+            borderColor="amber"
+            onSelect={(name) => {
+              onConfirm(item.id, name, 1);
+              setIsEditing(false);
+            }}
+            onCancel={() => setIsEditing(false)}
+          />
+        ) : (
+          <>
+            <div
+              className="match-right-text"
+              onClick={(e) => copy('1c', item.matched_name || '', e)}
+            >
+              {copiedId === '1c' && <span className="copy-flash">OK</span>}
+              <span className="match-name-1c yellow">{item.matched_name}</span>
+              <span className="match-qty-1c">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</span>
+            </div>
+            <div className="match-actions">
+              <span className="match-pct yellow">{Math.round(item.confidence * 100)}%</span>
+              <button className="btn-ok" onClick={handleConfirm} disabled={confirmed}>
+                {confirmed ? 'OK' : 'OK'}
+              </button>
+              <button className="btn-replace yellow" onClick={() => setIsEditing(true)}>
+                Заменить
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -256,195 +218,75 @@ interface RedRowProps {
 
 export function RedRow({ item, onSelect }: RedRowProps) {
   const { copiedId, copy } = useCopier();
-
   const [isEditing, setIsEditing] = useState(false);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<StandardItem[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const doSearch = useCallback(async (q: string) => {
-    if (!q.trim()) {
-      setResults([]);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const data = await searchStandardDb(q);
-      setResults(data);
-    } catch {
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => doSearch(query), 300);
-    return () => clearTimeout(timer);
-  }, [query, doSearch]);
 
   return (
-    <div className="glass-card card-red mb-2 overflow-visible relative sm:mb-1.5">
-      <div className="flex w-full min-h-[60px] sm:min-h-[50px]">
-        {/* Колонки с позициями */}
-        <div className="flex-1 grid grid-cols-2 divide-x divide-slate-700/30">
-          {/* Колонка 1: Заявка */}
-          <div 
-            className="py-3 pr-2 flex flex-col justify-center cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors relative"
-            style={{ paddingLeft: '6px' }}
-            onClick={(e) => copy('client', item.original_name, e)}
-          >
-            <CopyToast show={copiedId === 'client'} />
-            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">Заявка клиента</p>
-            <p className="text-[13px] sm:text-[11.5px] text-slate-300 font-medium leading-tight">{item.original_name}</p>
-            <p className="text-[10px] sm:text-[9px] text-slate-500 mt-1">{item.original_quantity} {item.original_unit}</p>
-          </div>
-          
-          {/* Колонка 2: Подбор 1С */}
-          <div 
-            className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-red-500/5 active:bg-red-500/10 transition-colors relative"
-            onClick={(e) => {
-              if (!isEditing && item.matched_name) copy('1c', item.matched_name, e);
-            }}
-          >
-            <CopyToast show={copiedId === '1c'} />
-            <div className="flex items-center justify-between mb-0.5">
-              <div className="flex items-center gap-1.5">
-                <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-red-500/80 font-bold">
-                  {isEditing ? 'РУЧНОЙ ПОИСК' : (item.matched_name ? 'Не точное' : 'Не найдено')}
-                </p>
-                {!isEditing && item.confidence > 0 && (
-                  <span className="text-[9px] sm:text-[8px] font-bold text-red-900 bg-red-400 px-1 py-[1px] rounded leading-none">
-                    {Math.round(item.confidence * 100)}%
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            {isEditing ? (
-              <div className="mt-1" onClick={(e) => e.stopPropagation()}>
-                <div className="relative w-full text-left">
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
-                    onFocus={() => setIsOpen(true)}
-                    placeholder="Найти в справочнике..."
-                    className="w-full px-2 py-1.5 rounded bg-slate-800/80 border border-red-500/30 text-xs text-slate-200 placeholder-red-400/40 focus:outline-none focus:border-red-400 transition-all h-[28px]"
-                  />
-                  {isOpen && (results.length > 0 || isLoading || query.length > 0) && (
-                    <div className="absolute z-50 w-[220px] right-0 top-[32px] max-h-48 overflow-y-auto rounded-md bg-slate-800 border border-slate-600 shadow-xl ring-1 ring-black/50">
-                      {isLoading ? (
-                        <div className="px-3 py-4 text-center text-xs text-slate-400">Поиск...</div>
-                      ) : results.length > 0 ? (
-                        results.map((dbItem) => (
-                          <button
-                            key={dbItem.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onSelect(item.id, dbItem.name);
-                              setIsOpen(false);
-                              setIsEditing(false);
-                              setQuery('');
-                            }}
-                            className="w-full text-left px-2.5 py-2 text-xs text-slate-200 hover:bg-slate-700 transition-colors border-b border-slate-700/50 last:border-0"
-                          >
-                            {dbItem.name}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-3 py-3 text-center text-xs text-slate-500">Не найдено</div>
-                      )}
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setIsOpen(false); setIsEditing(false); }}
-                        className="w-full text-center px-2 py-1 text-[10px] text-slate-400 bg-slate-900/50 hover:bg-slate-700 border-t border-slate-600"
-                      >
-                        Отмена
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <>
-                {item.matched_name ? (
-                  <p className="text-[13px] sm:text-[11.5px] text-red-200/70 font-medium leading-tight">{item.matched_name}</p>
-                ) : (
-                  <p className="text-[12px] sm:text-[11px] text-red-400/50 italic leading-tight">Нет совпадений в базе 1С</p>
-                )}
-                <div className="flex items-center justify-between mt-1">
-                  <p className="text-[10px] sm:text-[9px] text-red-400/60 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditing(true);
-                    }}
-                    className="text-[9px] sm:text-[8px] uppercase font-bold text-red-600 hover:text-red-400 border border-red-600/50 hover:border-red-400 rounded px-2 py-0.5 transition-colors"
-                  >
-                    Заменить
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+    <div className="match-row" style={{ borderLeftColor: 'var(--clr-red)' }}>
+      {/* Left: client */}
+      <div
+        className="match-left"
+        onClick={(e) => copy('client', item.original_name, e)}
+      >
+        {copiedId === 'client' && <span className="copy-flash">OK</span>}
+        <span className="match-name">{item.original_name}</span>
+        <span className="match-qty">{item.original_quantity} {item.original_unit}</span>
+      </div>
 
-        {/* Колонка 3: Статус (Узкая) */}
-        <div 
-          className="w-[36px] shrink-0 border-l border-slate-700/30 flex flex-col items-center justify-center bg-red-500/5"
-          title="Не точное совпадение"
-        >
-          <svg className="w-5 h-5 text-red-500/70 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-          </svg>
-        </div>
+      {/* Right: 1C match or empty */}
+      <div className="match-right">
+        {isEditing ? (
+          <InlineSearch
+            borderColor="red"
+            onSelect={(name) => {
+              onSelect(item.id, name);
+              setIsEditing(false);
+            }}
+            onCancel={() => setIsEditing(false)}
+          />
+        ) : (
+          <>
+            <div
+              className="match-right-text"
+              onClick={(e) => {
+                if (item.matched_name) copy('1c', item.matched_name, e);
+              }}
+            >
+              {copiedId === '1c' && <span className="copy-flash">OK</span>}
+              {item.matched_name ? (
+                <span className="match-name-1c red">{item.matched_name}</span>
+              ) : (
+                <span className="match-name-1c empty">Нет совпадений</span>
+              )}
+            </div>
+            <div className="match-actions">
+              {item.confidence > 0 && (
+                <span className="match-pct red">{Math.round(item.confidence * 100)}%</span>
+              )}
+              <button className="btn-replace red" onClick={() => setIsEditing(true)}>
+                Заменить
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-/* ===== SOURCE BADGE ===== */
-function SourceBadge({ source }: { source: string | null }) {
-  if (!source) {
-    return (
-      <span className="text-[8px] px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-400 border border-slate-600 truncate max-w-[60px]" title="Рассчитано по алгоритму">
-        Поиск
-      </span>
-    );
-  }
-  
-  if (source === 'ai') {
-    return (
-      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/30 truncate max-w-[60px] flex items-center gap-1" title="Gemini 2.5 AI">
-        <span>✨</span> ИИ
-      </span>
-    );
-  }
-  
-  if (source === 'cache') {
-    return (
-      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 truncate max-w-[60px]" title="Ранее подтвержденная позиция">
-        Память
-      </span>
-    );
-  }
+/* ===== SOURCE TAG ===== */
+function SourceTag({ source }: { source: string | null | undefined }) {
+  if (!source) return null;
 
-  if (source === 'mapping') {
-    return (
-      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 truncate max-w-[60px]" title="Жестко заданное правило">
-        100% Match
-      </span>
-    );
-  }
+  const map: Record<string, { label: string; cls: string }> = {
+    ai: { label: 'ИИ', cls: 'tag-ai' },
+    cache: { label: 'Кэш', cls: 'tag-cache' },
+    mapping: { label: 'Словарь', cls: 'tag-mapping' },
+    fuzzy: { label: 'Подбор', cls: 'tag-fuzzy' },
+    vector: { label: 'Вектор', cls: 'tag-vector' },
+  };
 
-  if (source === 'fuzzy') {
-    return (
-      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 truncate max-w-[60px]" title="Текстовый подбор (ИИ отклонила)">
-        Подбор
-      </span>
-    );
-  }
+  const info = map[source];
+  if (!info) return null;
 
-  return null;
+  return <span className={`source-tag ${info.cls}`}>{info.label}</span>;
 }
