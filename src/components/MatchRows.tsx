@@ -60,11 +60,14 @@ export function GreenRow({ item }: GreenRowProps) {
           
           {/* Колонка 2: 1С */}
           <div 
-            className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-emerald-500/5 active:bg-emerald-500/10 transition-colors relative"
+            className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-emerald-500/5 active:bg-emerald-500/10 transition-colors relative group/col"
             onClick={(e) => copy('1c', item.matched_name || '', e)}
           >
             <CopyToast show={copiedId === '1c'} />
-            <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-emerald-500/70 mb-0.5">Предложение 1С</p>
+            <div className="flex items-center justify-between mb-0.5">
+              <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-emerald-500/70">Предложение 1С</p>
+              <SourceBadge source={item.verified_by} />
+            </div>
             <p className="text-[13px] sm:text-[11.5px] text-emerald-100 font-medium leading-tight">{item.matched_name}</p>
             <p className="text-[10px] sm:text-[9px] text-emerald-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
           </div>
@@ -120,9 +123,12 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
             onClick={(e) => copy('1c', item.matched_name || '', e)}
           >
             <CopyToast show={copiedId === '1c'} />
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-amber-500/80 font-bold">ИИ-Подбор 1С</p>
-              <span className="text-[9px] sm:text-[8px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">{Math.round(item.confidence * 100)}%</span>
+            <div className="flex items-center justify-between mb-0.5">
+              <div className="flex items-center gap-1.5">
+                <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-amber-500/80 font-bold">ИИ-Подбор 1С</p>
+                <span className="text-[9px] sm:text-[8px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">{Math.round(item.confidence * 100)}%</span>
+              </div>
+              <SourceBadge source={item.verified_by} />
             </div>
             <p className="text-[13px] sm:text-[11.5px] text-amber-100 font-medium leading-tight">{item.matched_name}</p>
             <p className="text-[10px] sm:text-[9px] text-amber-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
@@ -268,4 +274,41 @@ export function RedRow({ item, onSelect }: RedRowProps) {
       </div>
     </div>
   );
+}
+
+/* ===== SOURCE BADGE ===== */
+function SourceBadge({ source }: { source: string | null }) {
+  if (!source) {
+    return (
+      <span className="text-[8px] px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-400 border border-slate-600 truncate max-w-[60px]" title="Рассчитано по алгоритму">
+        Поиск
+      </span>
+    );
+  }
+  
+  if (source === 'ai') {
+    return (
+      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/30 truncate max-w-[60px] flex items-center gap-1" title="Gemini 2.5 AI">
+        <span>✨</span> ИИ
+      </span>
+    );
+  }
+  
+  if (source === 'cache') {
+    return (
+      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 truncate max-w-[60px]" title="Ранее подтвержденная позиция">
+        Память
+      </span>
+    );
+  }
+
+  if (source === 'mapping') {
+    return (
+      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 truncate max-w-[60px]" title="Жестко заданное правило">
+        100% Match
+      </span>
+    );
+  }
+
+  return null;
 }

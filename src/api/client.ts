@@ -14,6 +14,7 @@ export interface MatchResult {
   converted_quantity: number | null;
   status: 'green' | 'yellow' | 'red';
   confidence: number;
+  verified_by: string | null;
   approved_name: string | null;
   approved_quantity: number | null;
 }
