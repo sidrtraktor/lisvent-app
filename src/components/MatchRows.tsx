@@ -87,13 +87,40 @@ export function GreenRow({ item }: GreenRowProps) {
 /* ===== YELLOW ROW ===== */
 interface YellowRowProps {
   item: MatchResult;
-  onConfirm: (id: number) => void;
+  onConfirm: (id: number, approvedName?: string, approvedQty?: number) => void;
 }
 
 export function YellowRow({ item, onConfirm }: YellowRowProps) {
   const { copiedId, copy } = useCopier();
 
   const [confirmed, setConfirmed] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<StandardItem[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const doSearch = useCallback(async (q: string) => {
+    if (!q.trim()) {
+      setResults([]);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const data = await searchStandardDb(q);
+      setResults(data);
+    } catch {
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => doSearch(query), 300);
+    return () => clearTimeout(timer);
+  }, [query, doSearch]);
 
   const handleConfirm = () => {
     setConfirmed(true);
@@ -120,18 +147,86 @@ export function YellowRow({ item, onConfirm }: YellowRowProps) {
           {/* Колонка 2: 1С */}
           <div 
             className="py-3 pl-3 pr-4 flex flex-col justify-center cursor-pointer hover:bg-amber-500/5 active:bg-amber-500/10 transition-colors relative"
-            onClick={(e) => copy('1c', item.matched_name || '', e)}
+            onClick={(e) => {
+              if (!isEditing) copy('1c', item.matched_name || '', e);
+            }}
           >
             <CopyToast show={copiedId === '1c'} />
             <div className="flex items-center justify-between mb-0.5">
               <div className="flex items-center gap-1.5">
-                <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-amber-500/80 font-bold">ИИ-Подбор 1С</p>
-                <span className="text-[9px] sm:text-[8px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">{Math.round(item.confidence * 100)}%</span>
+                <p className="text-[9px] sm:text-[8px] uppercase tracking-wider text-amber-500/80 font-bold">
+                  {isEditing ? 'РУЧНОЙ ПОИСК' : 'ИИ-Подбор 1С'}
+                </p>
+                {!isEditing && (
+                  <span className="text-[9px] sm:text-[8px] font-bold text-amber-900 bg-amber-400 px-1 py-[1px] rounded leading-none">
+                    {Math.round(item.confidence * 100)}%
+                  </span>
+                )}
               </div>
-              <SourceBadge source={item.verified_by} />
+              {!isEditing && <SourceBadge source={item.verified_by} />}
             </div>
-            <p className="text-[13px] sm:text-[11.5px] text-amber-100 font-medium leading-tight">{item.matched_name}</p>
-            <p className="text-[10px] sm:text-[9px] text-amber-400/80 mt-1 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
+            
+            {isEditing ? (
+              <div className="mt-1" onClick={(e) => e.stopPropagation()}>
+                <div className="relative w-full text-left">
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
+                    onFocus={() => setIsOpen(true)}
+                    placeholder="Найти в справочнике..."
+                    className="w-full px-2 py-1.5 rounded bg-slate-800/80 border border-amber-500/30 text-xs text-slate-200 placeholder-amber-400/40 focus:outline-none focus:border-amber-400 transition-all h-[28px]"
+                  />
+                  {isOpen && (results.length > 0 || isLoading || query.length > 0) && (
+                    <div className="absolute z-50 w-[220px] right-0 top-[32px] max-h-48 overflow-y-auto rounded-md bg-slate-800 border border-slate-600 shadow-xl ring-1 ring-black/50">
+                      {isLoading ? (
+                        <div className="px-3 py-4 text-center text-xs text-slate-400">Поиск...</div>
+                      ) : results.length > 0 ? (
+                        results.map((dbItem) => (
+                          <button
+                            key={dbItem.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onConfirm(item.id, dbItem.name, 1);
+                              setIsOpen(false);
+                              setIsEditing(false);
+                              setQuery('');
+                            }}
+                            className="w-full text-left px-2.5 py-2 text-xs text-slate-200 hover:bg-slate-700 transition-colors border-b border-slate-700/50 last:border-0"
+                          >
+                            {dbItem.name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-3 py-3 text-center text-xs text-slate-500">Не найдено</div>
+                      )}
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setIsOpen(false); setIsEditing(false); }}
+                        className="w-full text-center px-2 py-1 text-[10px] text-slate-400 bg-slate-900/50 hover:bg-slate-700 border-t border-slate-600"
+                      >
+                        Отмена
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-[13px] sm:text-[11.5px] text-amber-100 font-medium leading-tight">{item.matched_name}</p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-[10px] sm:text-[9px] text-amber-400/80 font-bold">{item.converted_quantity ?? item.original_quantity} {item.matched_unit}</p>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditing(true);
+                    }}
+                    className="text-[9px] sm:text-[8px] uppercase font-bold text-amber-600 hover:text-amber-400 border border-amber-600/50 hover:border-amber-400 rounded px-2 py-0.5 transition-colors"
+                  >
+                    Заменить
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
