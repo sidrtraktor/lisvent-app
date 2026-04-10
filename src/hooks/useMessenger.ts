@@ -20,6 +20,7 @@ interface MessengerAPI {
   sendData: (data: string) => void;
   getUserInfo: () => MessengerUser | null;
   getInitData: () => string;
+  getStartParam: () => string | null;
   getColorScheme: () => 'light' | 'dark';
   showConfirm: (message: string) => Promise<boolean>;
   isAvailable: boolean;
@@ -32,6 +33,7 @@ declare global {
       WebApp: {
         initData: string;
         initDataUnsafe: {
+          start_param?: string;
           user?: {
             id: number;
             first_name: string;
@@ -98,6 +100,10 @@ function createTelegramBridge(): MessengerAPI {
       return tg?.initData || '';
     },
 
+    getStartParam(): string | null {
+      return tg?.initDataUnsafe?.start_param || null;
+    },
+
     getColorScheme(): 'light' | 'dark' {
       return tg?.colorScheme || 'dark';
     },
@@ -111,9 +117,85 @@ function createTelegramBridge(): MessengerAPI {
   };
 }
 
-// Будущее: createMaxBridge() для Max Messenger
-// function createMaxBridge(): MessengerAPI { ... }
+// Функции для MAX
+function createMaxBridge(): MessengerAPI {
+  // @ts-ignore
+  const max = window.WebApp;
+  const isAvailable = !!max;
+
+  return {
+    isAvailable,
+
+    init() {
+      // MAX WebApp инициализируется сам, но можно вызвать expand если мы найдем аналог
+      // В доках нет метода expand и ready для MAX? Мы просто оставим пустыми если их нет.
+    },
+
+    close() {
+      // @ts-ignore
+      max?.close?.();
+    },
+
+    ready() {
+    },
+
+    expand() {
+    },
+
+    sendData(data: string) {
+      // @ts-ignore
+      max?.sendData?.(data);
+    },
+
+    getUserInfo(): MessengerUser | null {
+      // @ts-ignore
+      const user = max?.initDataUnsafe?.user;
+      if (!user) return null;
+      return {
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        username: user.username,
+      };
+    },
+
+    getInitData(): string {
+      // @ts-ignore
+      return max?.initData || '';
+    },
+
+    getStartParam(): string | null {
+      // @ts-ignore
+      return max?.initDataUnsafe?.start_param || null;
+    },
+
+    getColorScheme(): 'light' | 'dark' {
+      // В MAX пока может не быть colorScheme, ставим dark по дефолту
+      // @ts-ignore
+      return max?.colorScheme || 'dark';
+    },
+
+    async showConfirm(message: string): Promise<boolean> {
+      if (!max) return true;
+      return new Promise((resolve) => {
+        // У MAX есть showAlert или showConfirm? Если нет нативный confirm:
+        // @ts-ignore
+        if (max.showConfirm) {
+          // @ts-ignore
+          max.showConfirm(message, resolve);
+        } else {
+          resolve(window.confirm(message));
+        }
+      });
+    },
+  };
+}
 
 // Экспорт единственного экземпляра
-export const messenger: MessengerAPI = createTelegramBridge();
+// Логика: если есть MAX - берем его, иначе Telegram
+// @ts-ignore
+export const messenger: MessengerAPI = typeof window !== 'undefined' && window.WebApp && window.WebApp.initData
+  ? createMaxBridge()
+  : createTelegramBridge();
+
 export type { MessengerAPI, MessengerUser };

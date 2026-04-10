@@ -17,7 +17,8 @@ export function MatchingTable() {
   const [approved, setApproved] = useState(false);
 
   const sessionId =
-    new URLSearchParams(window.location.search).get('session_id') || '';
+    new URLSearchParams(window.location.search).get('session_id') || 
+    messenger.getStartParam() || '';
 
   const handleCreateDemo = async () => {
     setLoading(true);
